@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Face Recognition Capture</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Modern Color Palette */
+      :root {
+        --primary-color: #3498db;
+        --secondary-color: #2ecc71;
+        --background-color: #ecf0f1;
+        --card-background: #ffffff;
+        --text-color: #2c3e50;
+        --accent-color: #9b59b6;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", "Arial", sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        background-color: var(--card-background);
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1),
+          0 6px 10px rgba(0, 0, 0, 0.05);
+        max-width: 800px;
+        width: 100%;
+        padding: 30px;
+        text-align: center;
+        transition: transform 0.3s ease;
+      }
+
+      .container:hover {
+        transform: translateY(-5px);
+      }
+
+      h1 {
+        color: var(--primary-color);
+        margin-bottom: 25px;
+        font-size: 2.2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      h1 i {
+        color: var(--secondary-color);
+      }
+
+      #webcam {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      #webcam:hover {
+        transform: scale(1.02);
+      }
+
+      .capture-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .capture-btn:hover {
+        background-color: #2980b9;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+        border-spacing: 0;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+      }
+
+      table th,
+      table td {
+        padding: 10px 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+      }
+
+      table thead {
+        background-color: var(--secondary-color);
+        color: #fff;
+      }
+
+      table tbody tr {
+        background-color: #f9f9f9;
+        border-bottom: 1px solid #ddd;
+      }
+
+      table tbody tr:hover {
+        background-color: #f1f4f7;
+      }
+
+      table img {
+        max-width: 100px;
+        height: auto;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+
+      .accuracy-bar {
+        width: 100%;
+        height: 12px;
+        background-color: #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-top: 5px;
+      }
+
+      .accuracy-bar span {
+        display: block;
+        height: 100%;
+        border-radius: 6px;
+      }
+
+      .low-accuracy {
+        background-color: #e74c3c;
+      }
+
+      .medium-accuracy {
+        background-color: #f39c12;
+      }
+
+      .high-accuracy {
+        background-color: var(--secondary-color);
+      }
+
+      #capturedImage {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 350px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      #capturedImage:hover {
+        transform: scale(1.05);
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 20px;
+          margin: 0 10px;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>
+        <i class="fas fa-face-recognition"></i>
+        Face Recognition Capture
+        <i class="fas fa-camera"></i>
+      </h1>
+
+      <video id="webcam" autoplay></video>
+      <button class="capture-btn" onclick="captureImage()">
+        <i class="fas fa-camera"></i>
+        Capture Image
+      </button>
+      
+
+      <div id="matches"></div>
+      <table id="matched-images">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Matched images will be displayed here -->
+        </tbody>
+      </table>
+      <img id="capturedImage" alt="Processed Image" />
+    </div>
+
+    <script>
+      const video = document.getElementById("webcam");
+
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then(function (stream) {
+          video.srcObject = stream;
+        })
+        .catch(function (error) {
+          alert("Webcam not accessible. Error: " + error);
+        });
+
+      function captureImage() {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(function (blob) {
+          let formData = new FormData();
+          formData.append("file", blob, "captured_image.jpg");
+
+          fetch("http://localhost:8000/process-image/", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Display matches
+              const matchedImagesTable = document.querySelector(
+                "#matched-images tbody"
+              );
+              matchedImagesTable.innerHTML = "";
+              console.log(data);
+
+              data.matched_images.forEach((imgBase64, index) => {
+                const accuracy = data.accuracy[index];
+                const title = data.matches[index] || `Person ${index + 1}`;
+                const accuracyClass =
+                  accuracy > 80
+                    ? "high-accuracy"
+                    : accuracy > 50
+                    ? "medium-accuracy"
+                    : "low-accuracy";
+
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                  <td>${index + 1}</td> <!-- Row number -->
+                  <td><img src="data:image/jpeg;base64,${imgBase64}" alt="${title}" /></td>
+                  <td>${title}</td>
+                  <td>
+                    <div class="accuracy-bar">
+                      <span class="${accuracyClass}" style="width: ${accuracy}%;"></span>
+                    </div>
+                    ${accuracy}%
+                  </td>
+                `;
+                matchedImagesTable.appendChild(row);
+              });
+
+              const imgElement = document.getElementById("capturedImage");
+              imgElement.src = "data:image/jpeg;base64," + data.image;
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

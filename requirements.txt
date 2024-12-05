@@ -1,0 +1,12 @@
+opencv-python 
+mediapipe 
+face_recognition 
+faiss-cpu 
+numpy
+pyheif
+matplotlib
+pillow 
+pillow-heif
+dlib
+tkinter 
+

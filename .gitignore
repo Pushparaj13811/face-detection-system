@@ -1,1 +1,5 @@
 dataset_images
+__pycache__
+.vscode
+*.bin
+*.npy

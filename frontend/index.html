@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Face Recognition Capture</title>
+    <link
+      rel="icon"
+      href="./favicorn.png"
+      type="image/png"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- Navbar -->
+    <div class="navbar">
+      <i class="fas fa-camera"></i>
+      <h1>Face Recognition</h1>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+      <div class="preview-container">
+        <video id="webcam" autoplay></video>
+        <img id="imagePreview" alt="Preview Image" />
+      </div>
+
+      <div class="btn-container">
+        <button class="capture-btn" id="captureBtn">
+          <i class="fas fa-camera"></i> Open Camera
+        </button>
+        <button
+          class="upload-btn"
+          onclick="document.getElementById('fileInput').click()"
+        >
+          <i class="fas fa-upload"></i> Upload Image
+        </button>
+        <button
+          class="match-btn"
+          id="matchBtn"
+          onclick="sendImage()"
+          style="display: none"
+        >
+          <i class="fas fa-search"></i> Match
+        </button>
+        <input
+          type="file"
+          id="fileInput"
+          accept="image/*"
+          style="display: none"
+          onchange="previewUploadedImage(event)"
+        />
+      </div>
+
+      <div id="matches"></div>
+      <div id="result"></div>
+      <div id="errorText"></div>
+      <table id="matched-images">
+        <thead>
+          <tr>
+            <th>S.N.</th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Accuracy</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <script src="./script.js"></script>
+  </body>
+</html>

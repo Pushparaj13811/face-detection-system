@@ -10,15 +10,15 @@ import os
 
 app = FastAPI()
 
-origins = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500/index.html"
-]
+# origins = [
+#     "http://127.0.0.1:5500",
+#     "http://localhost:5500",
+#     "http://127.0.0.1:5500/index.html"
+# ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,7 +28,7 @@ index = faiss.read_index("face_index.bin")
 metadata = np.load("metadata.npy")
 
 
-THRESHOLD = 0.3
+THRESHOLD = 0.25
 
 def calculate_accuracy(distance, threshold=THRESHOLD):
     if distance > threshold:

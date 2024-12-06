@@ -81,6 +81,10 @@ All dependencies are listed in `requirements.txt`.
    ![Swagger UI](./public/api.png)  
 2. **Frontend Interface**  
    ![Frontend](./public/frontend.png)  
+   ![Upload](./public/upload-img.png)
+   ![Open-camera](./public/camera-opened.png)
+   ![Not-Matched](./public/not-matched.png)
+   ![Matched](./public/matched.png)
 
 ---
 

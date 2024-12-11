@@ -24,7 +24,7 @@ This project is a real-time face detection and recognition system where all func
 │   │   └── style.css    # Main stylesheet
 │   └── js/              # JavaScript files
 │       └── script.js    # Main frontend logic
-├── tempelates/          # Serves Html tempelate
+├── templates/          # Serves Html tempelate
 │   └── index.html 
 ├── dataset_images/      # Directory to store images for training/testing
 ├── converted_images/    # Directory to store converted images

@@ -9,3 +9,5 @@ pillow
 pillow-heif
 dlib
 mtcnn
+aiofiles
+

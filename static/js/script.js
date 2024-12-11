@@ -3,9 +3,11 @@ const imagePreview = document.getElementById("imagePreview");
 const matchBtn = document.getElementById("matchBtn");
 const captureBtn = document.getElementById("captureBtn");
 const loadingSpinner = document.getElementById("loading");
+const errorText = document.querySelector("#errorText");
 let currentBlob = null;
 let currentStream = null;
 let currentFile = null;
+let currentTaskId = null;
 
 function startWebcam() {
   if (currentStream) {
@@ -95,7 +97,6 @@ function previewUploadedImage(event) {
 }
 
 function sendImage() {
-  const errorText = document.querySelector("#errorText");
   if (!currentBlob && !currentFile) {
     alert("Please capture or upload an image first.");
     return;
@@ -106,6 +107,7 @@ function sendImage() {
   matchBtn.innerHTML = `
     <i class="fas fa-search"></i> Matching...
   `;
+  errorText.innerText = "";
 
   const formData = new FormData();
 
@@ -121,21 +123,53 @@ function sendImage() {
   })
     .then((response) => response.json())
     .then((data) => {
-      displayResults(data);
-      loadingSpinner.style.display = "none";
-      matchBtn.innerHTML = `
-        <i class="fas fa-search"></i> Match
-      `;
-      matchBtn.disabled = false;
+      if (data.task_id) {
+        currentTaskId = data.task_id;
+        pollTaskStatus();
+      } else {
+        throw new Error("No task ID received");
+      }
     })
     .catch((error) => {
       errorText.innerText = error.message;
-      loadingSpinner.style.display = "none";
-      matchBtn.innerHTML = `
-        <i class="fas fa-search"></i> Match
-      `;
-      matchBtn.disabled = false;
+      resetMatchButton();
     });
+}
+
+function pollTaskStatus() {
+  if (!currentTaskId) return;
+
+  fetch(`http://localhost:8000/task-status/${currentTaskId}`)
+    .then((response) => response.json())
+    .then((data) => {
+      switch(data.status) {
+        case "processing":
+          setTimeout(pollTaskStatus, 1000);
+          break;
+        case "completed":
+          displayResults(data.results);
+          resetMatchButton();
+          currentTaskId = null;
+          break;
+        case "error":
+          throw new Error(data.message || "Processing failed");
+        default:
+          throw new Error("Unexpected task status");
+      }
+    })
+    .catch((error) => {
+      errorText.innerText = error.message;
+      resetMatchButton();
+      currentTaskId = null;
+    });
+}
+
+function resetMatchButton() {
+  loadingSpinner.style.display = "none";
+  matchBtn.innerHTML = `
+    <i class="fas fa-search"></i> Match
+  `;
+  matchBtn.disabled = false;
 }
 
 function displayResults(data) {
@@ -143,14 +177,15 @@ function displayResults(data) {
   const result = document.querySelector("#result");
   matchedImagesTable.innerHTML = "";
 
-  if (data.message === "No matches found") {
+  if (!data.matches || data.matches.length === 0) {
     result.style.color = "red";
-    result.innerText = data.message;
+    result.innerText = "No matches found";
   } else {
+    result.style.color = "black";
     result.innerText = `Total ${data.matches.length} images matched`;
 
     data.matched_images.forEach((imgPath, index) => {
-      const accuracy = data.accuracy[index];
+      const accuracy = data.accuracies[index];
       const title = data.matches[index] || `Person ${index + 1}`;
       const accuracyPercentage = Math.round(accuracy);
       const row = document.createElement("tr");

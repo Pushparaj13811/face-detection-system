@@ -13,6 +13,7 @@ router = APIRouter()
 processing_tasks: dict[str, Task] = {}
 
 VALID_EXTENSIONS = (".png", ".jpg", ".jpeg", ".heic")
+os.makedirs("uploads", exist_ok=True)
 
 @router.post("/process-image/")
 async def process_uploaded_image(file: UploadFile):

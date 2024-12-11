@@ -55,7 +55,7 @@ pip install -r requirements.txt
 ```
 
 ### 2. Setting Up the Dataset
-Create a folder named `dataset_images` in the project directory and add images to it. If your images are in `.heic` format, convert them and store them in `converted_images`. The `uploads` directory will store the images uploaded by users.
+Create a folder named `dataset_images` in the project directory and add images to it. The `converted_images` directory will stored the converted image from `.heic` format. The `uploads` directory will store the images uploaded by users.
 
 ### 3. Encoding the Dataset
 Run the `face.ipynb` notebook to:

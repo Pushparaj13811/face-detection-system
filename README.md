@@ -11,27 +11,36 @@ This project is a real-time face detection and recognition system where all func
 ```plaintext
 .
 ├── app.py                # FastAPI application file for the backend
-├── static/               # Static assets directory (served by backend)
-│   ├── assets/           # assets
-│   │   └── favicon.png
-│   ├── css/              # CSS styles
-│   │   └── style.css     # Main stylesheet
-│   └── js/               # JavaScript files
-│       └── script.js     # Main frontend logic
-├── templates/            # HTML templates (served by backend)
-│   └── index.html        # Main frontend template
-├── dataset_images/       # Directory to store images for training/testing
-├── converted_images/     # Directory to store converted images (e.g., .heic format)
-├── uploads/              # Directory to store uploaded images
-├── public/               # Public assets like screenshots
-├── requirements.txt      # Python dependencies
+├── config.py            # Configuration settings
+├── utils/               # Utility modules
+│   ├── face_processing.py  # Face detection and recognition logic
+│   ├── image_utils.py      # Image processing utilities
+│   ├── logger.py          # Logging configuration
+│   └── async_utils.py     # Async helper functions
+├── tasks/               # Background tasks
+│   └── processing_tasks.py # Async processing tasks
+├── static/              # Static assets directory
+│   ├── css/             # CSS styles
+│   │   └── style.css    # Main stylesheet
+│   └── js/              # JavaScript files
+│       └── script.js    # Main frontend logic
+├── tempelates/          # Serves Html tempelate
+│   └── index.html 
+├── dataset_images/      # Directory to store images for training/testing
+├── converted_images/    # Directory to store converted images
+├── uploads/            # Directory to store uploaded images
+├── public/             # Public assets like screenshots
+└── requirements.txt    # Python dependencies
 ```
 
 ## Features
-1. Real-time face detection and recognition.
-2. Fast and accurate image matching with large datasets using FAISS.
-3. Simple frontend served by the backend for interaction with the API.
-4. Support for multiple users uploading images concurrently.
+1. Real-time face detection and recognition
+2. Fast and accurate image matching with large datasets using FAISS
+3. Simple frontend served by the backend for interaction with the API
+4. Support for multiple users uploading images concurrently
+5. Asynchronous processing for better performance
+6. Structured logging system
+7. Configurable settings via config.py
 
 ---
 
@@ -93,8 +102,31 @@ The following Python libraries are required:
 - `uvicorn`
 - `python-multipart`    # For handling file uploads
 - `jinja2`             # For template rendering
+- `python-logging`     # For structured logging
+- `pillow`            # For image processing
+- `numpy`             # For numerical operations
 
 All dependencies are listed in `requirements.txt`.
+
+## Advanced Features
+
+### Asynchronous Processing
+- Background tasks handle heavy processing operations
+- Non-blocking image processing using async/await patterns
+- Efficient handling of multiple concurrent requests
+
+### Logging System
+- Structured logging for better debugging and monitoring
+- Separate logs for different components (face processing, image utils, etc.)
+- Configurable log levels via config.py
+
+### Configuration Management
+- Centralized configuration in config.py
+- Easy to modify settings for:
+  - Image processing parameters
+  - Face detection thresholds
+  - File storage paths
+  - Logging options
 
 ---
 
@@ -114,3 +146,9 @@ All dependencies are listed in `requirements.txt`.
 - Ensure that the images in `dataset_images` are clear and properly cropped for better accuracy.
 - For optimal performance, test the system with a reasonable number of images initially before scaling up to a larger dataset.
 - The system supports multiple users, and all frontend files (HTML, CSS, JS) are served by the backend to make the setup easier.
+
+## Additional Notes
+- The system uses asynchronous processing for better performance with multiple users
+- Logging is implemented for better debugging and monitoring
+- All configurations can be modified through config.py
+- The backend is optimized for concurrent processing of multiple requests

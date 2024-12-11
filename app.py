@@ -34,7 +34,7 @@ app.add_middleware(
 index = faiss.read_index("face_index.bin")
 metadata = np.load("metadata.npy")
 
-THRESHOLD = 0.25
+THRESHOLD = 0.22
 
 # ThreadPoolExecutor for parallel processing
 executor = ThreadPoolExecutor(max_workers=4)

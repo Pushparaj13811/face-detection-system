@@ -10,27 +10,15 @@ This project is a real-time face detection and recognition system where all func
 ## Folder Structure
 ```plaintext
 .
-├── app.py                # FastAPI application file for the backend
-├── config.py            # Configuration settings
-├── utils/               # Utility modules
-│   ├── face_processing.py  # Face detection and recognition logic
-│   ├── image_utils.py      # Image processing utilities
+├── app.py                 # FastAPI application file for the backend
+├── config.py              # Configuration settings
+├── utils/                 # Utility modules
+│   ├── face_processing.py # Face detection and recognition logic
+│   ├── image_utils.py     # Image processing utilities
 │   ├── logger.py          # Logging configuration
 │   └── async_utils.py     # Async helper functions
-├── tasks/               # Background tasks
+├── tasks/                 # Background tasks
 │   └── processing_tasks.py # Async processing tasks
-├── static/              # Static assets directory
-│   ├── css/             # CSS styles
-│   │   └── style.css    # Main stylesheet
-│   └── js/              # JavaScript files
-│       └── script.js    # Main frontend logic
-├── templates/          # Serves Html tempelate
-│   └── index.html 
-├── dataset_images/      # Directory to store images for training/testing
-├── converted_images/    # Directory to store converted images
-├── uploads/            # Directory to store uploaded images
-├── public/             # Public assets like screenshots
-└── requirements.txt    # Python dependencies
 ```
 
 ## Features

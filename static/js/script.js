@@ -2,8 +2,10 @@ const video = document.getElementById("webcam");
 const imagePreview = document.getElementById("imagePreview");
 const matchBtn = document.getElementById("matchBtn");
 const captureBtn = document.getElementById("captureBtn");
+const loadingSpinner = document.getElementById("loading");
 let currentBlob = null;
 let currentStream = null;
+let currentFile = null;
 
 function startWebcam() {
   if (currentStream) {
@@ -53,6 +55,7 @@ function captureImage() {
 
   canvas.toBlob((blob) => {
     currentBlob = blob;
+    currentFile = null;
     matchBtn.style.display = "flex";
   });
 }
@@ -60,6 +63,14 @@ function captureImage() {
 function previewUploadedImage(event) {
   const file = event.target.files[0];
   if (file) {
+    const validExtensions = ["jpeg", "jpg", "png", "heic"];
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+
+    if (!validExtensions.includes(fileExtension)) {
+      alert("Invalid file type. Please upload an image.");
+      return;
+    }
+
     if (currentStream) {
       currentStream.getTracks().forEach((track) => track.stop());
       currentStream = null;
@@ -75,12 +86,9 @@ function previewUploadedImage(event) {
 
       captureBtn.innerHTML = '<i class="fas fa-camera"></i> Open Camera';
 
-      const reader2 = new FileReader();
-      reader2.onloadend = () => {
-        currentBlob = new Blob([reader2.result]);
-        matchBtn.style.display = "flex";
-      };
-      reader2.readAsArrayBuffer(file);
+      currentFile = file;
+      currentBlob = null;
+      matchBtn.style.display = "flex";
     };
     reader.readAsDataURL(file);
   }
@@ -88,21 +96,24 @@ function previewUploadedImage(event) {
 
 function sendImage() {
   const errorText = document.querySelector("#errorText");
-  if (!currentBlob) {
+  if (!currentBlob && !currentFile) {
     alert("Please capture or upload an image first.");
     return;
   }
 
-  // Show spinner and update button text
-  matchBtn.innerHTML = `
-          <i class="fas fa-search"></i>
-          Matching...
-          <span class="spinner"></span>
-        `;
+  loadingSpinner.style.display = "block";
   matchBtn.disabled = true;
+  matchBtn.innerHTML = `
+    <i class="fas fa-search"></i> Matching...
+  `;
 
   const formData = new FormData();
-  formData.append("file", currentBlob, "uploaded_image.jpg");
+
+  if (currentFile) {
+    formData.append("file", currentFile, currentFile.name);
+  } else {
+    formData.append("file", currentBlob, "captured_image.jpg");
+  }
 
   fetch("http://localhost:8000/process-image/", {
     method: "POST",
@@ -111,18 +122,18 @@ function sendImage() {
     .then((response) => response.json())
     .then((data) => {
       displayResults(data);
+      loadingSpinner.style.display = "none";
       matchBtn.innerHTML = `
-              <i class="fas fa-search"></i>
-              Match
-            `;
+        <i class="fas fa-search"></i> Match
+      `;
       matchBtn.disabled = false;
     })
     .catch((error) => {
       errorText.innerText = error.message;
+      loadingSpinner.style.display = "none";
       matchBtn.innerHTML = `
-              <i class="fas fa-search"></i>
-              Match
-            `;
+        <i class="fas fa-search"></i> Match
+      `;
       matchBtn.disabled = false;
     });
 }
@@ -131,28 +142,29 @@ function displayResults(data) {
   const matchedImagesTable = document.querySelector("#matched-images tbody");
   const result = document.querySelector("#result");
   matchedImagesTable.innerHTML = "";
+
   if (data.message === "No matches found") {
     result.style.color = "red";
     result.innerText = data.message;
   } else {
-    data.matched_images.forEach((imgBase64, index) => {
-      result.innerText = `Total ${data.matches.length} images matched`;
+    result.innerText = `Total ${data.matches.length} images matched`;
+
+    data.matched_images.forEach((imgPath, index) => {
       const accuracy = data.accuracy[index];
       const title = data.matches[index] || `Person ${index + 1}`;
       const accuracyPercentage = Math.round(accuracy);
-
       const row = document.createElement("tr");
       row.innerHTML = `
-            <td>${index + 1}</td>
-            <td><img src="data:image/jpeg;base64,${imgBase64}" /></td>
-            <td>${title}</td>
-            <td>
-              ${accuracyPercentage}%
-              <div class="accuracy-bar">
-                <span style="width: ${accuracyPercentage}%;"></span>
-              </div>
-            </td>
-          `;
+        <td>${index + 1}</td>
+        <td><img src="${imgPath}" alt="Matched Image" /></td>
+        <td>${title}</td>
+        <td>
+          ${accuracyPercentage}%
+          <div class="accuracy-bar">
+            <span style="width: ${accuracyPercentage}%;"></span>
+          </div>
+        </td>
+      `;
       matchedImagesTable.appendChild(row);
     });
   }

@@ -26,7 +26,7 @@ def process_image(image_bytes, path_of_image=None):
 
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        face_locations = face_recognition.face_locations(rgb_image, model="hog")
+        face_locations = face_recognition.face_locations(rgb_image, model="mtcnn")
         face_encodings = face_recognition.face_encodings(rgb_image, face_locations)
 
         logger.debug(f"Detected {len(face_encodings)} face(s)")

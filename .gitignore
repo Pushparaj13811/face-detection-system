@@ -1,4 +1,6 @@
 dataset_images
+converted_images
+uploads
 __pycache__
 .vscode
 *.bin

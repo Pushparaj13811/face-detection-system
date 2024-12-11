@@ -8,5 +8,4 @@ matplotlib
 pillow 
 pillow-heif
 dlib
-tkinter 
-
+mtcnn

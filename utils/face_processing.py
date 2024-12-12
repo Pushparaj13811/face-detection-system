@@ -4,7 +4,7 @@ import numpy as np
 import face_recognition
 from concurrent.futures import ThreadPoolExecutor
 from utils.logger import logger
-from config import THRESHOLD, metadata, index
+from config import THRESHOLD, metadata, index as faiss_index
 from utils.image_utils import convert_heic_to_jpeg_bulk
 
 os.makedirs("converted_images", exist_ok=True)
@@ -17,7 +17,6 @@ def process_image(image_bytes, path_of_image=None):
         logger.info("Processing image...")
         if not image_bytes:
             raise ValueError("Empty image data")
-
 
         img_array = np.frombuffer(image_bytes, np.uint8)
         image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
@@ -45,16 +44,13 @@ def process_image(image_bytes, path_of_image=None):
             }
 
         matches, matched_images, accuracies = [], [], []
-        image_to_convert = []
-        filtered_matched_images = []
-
 
         with ThreadPoolExecutor() as executor:
             futures = []
             for encoding in face_encodings:
                 encoding_array = np.array([encoding])
 
-                futures.append(executor.submit(index.search, encoding_array, len(metadata)))
+                futures.append(executor.submit(faiss_index.search, encoding_array, len(metadata)))
 
             for future in futures:
                 distances, indices = future.result()
@@ -66,25 +62,64 @@ def process_image(image_bytes, path_of_image=None):
                         accuracies.append(calculate_accuracy(distance))
                         matches.append(f"Match found: {metadata[indices[0][i]]} (Accuracy: {accuracies[-1]}%)")
         
-        for image in matched_images:
-            if image.endswith(".heic") or image.endswith(".HEIC"):
-                image_to_convert.append(image)
-            else:
-                filtered_matched_images.append(image)
+        # Prepare a list to track original image names and conversion details
+        final_matched_images = matched_images.copy()
+        heic_images_to_convert = []
+        heic_indices = []
 
-        if image_to_convert:
-            converted_images = convert_heic_to_jpeg_bulk(image_to_convert)
-            matched_images = filtered_matched_images + converted_images
-        else:
-            matched_images = filtered_matched_images
+        # Identify HEIC images and prepare for conversion
+        for idx, image in enumerate(matched_images):
+            if image.endswith(".heic") or image.endswith(".HEIC"):
+                heic_images_to_convert.append(image)
+                heic_indices.append(idx)
+
+        # Convert HEIC images if any
+        if heic_images_to_convert:
+            converted_images = convert_heic_to_jpeg_bulk(heic_images_to_convert)
+            
+            # Ensure we don't go out of bounds
+            for idx, original_heic_image in zip(heic_indices, heic_images_to_convert):
+                # Find the corresponding converted image
+                try:
+                    converted_image_index = heic_images_to_convert.index(original_heic_image)
+                    
+                    # Check if we have a corresponding converted image
+                    if converted_image_index < len(converted_images):
+                        converted_image = converted_images[converted_image_index]
+                        
+                        # Preserve the original filename structure
+                        original_basename = os.path.basename(original_heic_image)
+                        converted_basename = os.path.basename(converted_image)
+                        
+                        final_converted_image = original_heic_image.replace(
+                            os.path.splitext(original_basename)[0] + os.path.splitext(original_heic_image)[1],
+                            os.path.splitext(original_basename)[0] + '.jpg'
+                        )
+                        
+                        final_matched_images[idx] = final_converted_image
+                    else:
+                        logger.warning(f"Conversion failed for image: {original_heic_image}")
+                
+                except (ValueError, IndexError) as e:
+                    logger.error(f"Error processing converted image: {e}")
         
-        logger.debug(f"Length of matched images: {len(matched_images)}")
+        # Sort matched images, matches, and accuracies in descending order of accuracy
+        sorted_data = sorted(
+            zip(accuracies, matched_images, matches), 
+            key=lambda x: x[0], 
+            reverse=True
+        )
+        
+        # Unpack the sorted data
+        sorted_accuracies, sorted_matched_images, sorted_matches = zip(*sorted_data)
+
+        logger.debug(f"Length of matched images: {len(sorted_matched_images)}")
 
         return {
             "image_path": path_of_image,
-            "matches": matches,
-            "matched_images": matched_images,
-            "accuracies": accuracies,
+            "matches": list(sorted_matches),
+            "matched_images": list(sorted_matched_images),
+            "accuracies": list(sorted_accuracies),
             "message": "Processing completed successfully",
             "success": True,
         }
